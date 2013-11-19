@@ -1,4 +1,4 @@
-# angular-pageTitle
+# angular-pagetitle
 Angular directive for HTML title tag.
 
 
@@ -56,5 +56,4 @@ Or...
   <h1>{{vhTitle}}</h1>
 
 ## License
-Do what you want.
-
+Public Domain - Do what you want.
