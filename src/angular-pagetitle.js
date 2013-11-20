@@ -1,80 +1,98 @@
 'use strict';
 
+/**
+ * @author:   Henrik Lundgren
+ * @date:     2013-11-19
+ * @desc:     https://github.com/henriklundgren/angular-pagetitle
+ */
+
 angular.module('vhTitle', [])
+
+  .filter('vhCapitalizeTitle', function () {
+    return function (input) {
+      /**
+       * Capitalize function
+       * http://stackoverflow.com/a/3291856
+       */
+      if ( angular.isDefined(input) ) {
+        return input.charAt(0).toUpperCase() + input.slice(1);
+      } else {
+        return;
+      }
+    }
+  })
 
   /**
    * Angular directive to update the 
    * html title tag.
-   * See Github for info.
    */
   .directive('vhPageTitle', ['$rootScope', '$log', function($rootScope, $log) {
 
-    var directiveDefinitionObject = {
-      template: '<title data-ng-bind-template="{{vhPrefix}} {{vhTitle}} {{vhSuffix}}"></title>',
-      replace: true,
-      scope: false, // Dont isolate the scope, the alternative is to broadcast it on the rootScope.
-      controller: function ($scope) {
-      
-        /**
-         * Capitalize function
-         * http://stackoverflow.com/a/3291856
-         */
-        String.prototype.capitalize = function() {
-          return this.charAt(0).toUpperCase() + this.slice(1);
-        };
+    var tmpl = '<title data-ng-bind-template="{{vhPrefix}} {{vhTitle | vhCapitalizeTitle}} {{vhSuffix}}"></title>';
 
-      },
+    var directiveDefinitionObject = {
+
+      template: tmpl,
+      replace: true,
+      scope: false, // Dont isolate the scope, the alternative is to broadcast the title on the rootScope.
       link: function postLink(scope, elem, attrs) {
 
         // Watch for route change and update route title.
         $rootScope.$on('$routeChangeSuccess', function (ev, current, prev) {
 
-          var firstPageSuffix     = current.$$route.customSuffix;
-          var firstPagePrefix     = current.$$route.customPrefix;
+          /**
+           * Affixes
+           * Set default affix on element or custom affix on route.
+           *
+           ********************************************************/
+          var customSuffix        = current.$$route.customSuffix;
+          var customPrefix        = current.$$route.customPrefix;
+          var defaultSuffix       = attrs.suffix;
+          var defaultPrefix       = attrs.prefix;
 
-          // Path has custom affix.
-          if ( angular.isDefined(firstPageSuffix) ) {
-            scope.vhPrefix    = null;
-            scope.vhSuffix    = ' - ' + firstPageSuffix;
+          if ( angular.isDefined(customPrefix) ) {
+            scope.vhPrefix = customPrefix + ' - ' || null;
+          } 
+          
+          else if ( angular.isDefined(customSuffix) ) {
+            scope.vhSuffix = ' - ' + customSuffix || null;
           }
-          else if ( angular.isDefined(firstPagePrefix) ) {
-            scope.vhSuffix    = null;
-            scope.vhPrefix    = firstPagePrefix + ' - ';
+
+          else if ( angular.isDefined(defaultPrefix) ) {
+            scope.vhPrefix = defaultPrefix + ' - ' || null;
           }
+
+          else if ( angular.isDefined(defaultSuffix) ) {
+            scope.vhSuffix = ' - ' + defaultSuffix || null;
+          }
+
           else {
-
-            var defaultSuffix   = attrs.suffix;
-            var defaultPrefix   = attrs.prefix;
-
-            if ( angular.isDefined(defaultSuffix) ) {
-              scope.vhPrefix    = null;
-              scope.vhSuffix    = ' - ' + defaultSuffix;
-            }
-            else if ( angular.isDefined(defaultPrefix) ) {
-              scope.vhSuffix    = null;
-              scope.vhPrefix    = defaultPrefix + ' - ';
-            }
+            return;
           }
 
-          // If the title should be the route parameter.
-          if ( current.$$route.useRouteParamTitle ) {
+          /**
+           * Title
+           * Set titles or declare to use dynamic names on your route.
+           *
+           **********************************************************/
+          var useRouteParameter = current.$$route.useRouteParamTitle; // true or name of route param
 
-            // Which route parameter to use.
-            var routeName   = current.routeParamTitle;
-            var routeArray  = Object.keys(current.params);
-            if ( angular.isDefined(routeName) && routeArray ) {
+          // Dynamic route param title
+          if ( angular.isDefined(useRouteParameter) ) {
 
-              // Capitalize title for proper display
-              scope.vhTitle = current.params[routeName].capitalize();
+            // If boolean value
+            if ( typeof useRouteParameter === 'boolean' ) {
+              var arr = Object.keys(current.params);
+              var tailOfArray = arr.slice(-1).pop();
+              scope.vhTitle = current.params[tailOfArray];
+
+            } else {
+              scope.vhTitle = current.params[useRouteParameter];
             }
-            // No route parameter to use declared.
-            else {
 
-              // Use the last parameter on the route as title.
-              var tailRouteParameter = routeArray.slice(-1).pop();
-              scope.vhTitle = current.params[tailRouteParameter].capitalize();
-            }
           }
+
+          // Static title
           else if ( angular.isDefined(current.title) ) {
             scope.vhTitle = current.title;
           } else {
