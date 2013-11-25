@@ -23,6 +23,53 @@ angular.module('vhTitle', [])
   })
 
   /**
+   * Headlines
+   */
+  .directive('vhHeading', ['$rootScope', '$log', function($rootScope, $log) {
+    return {
+      template: '{{vhTitle}}',
+      replace: false,
+      scope: {},
+      link: function postLink(scope, element, attrs) {
+        
+        // Get title
+        $rootScope.$on('$routeChangeStart', function (ev, next, current) {
+          /**
+           * Title
+           * Set titles or declare to use dynamic names on your route.
+           *
+           **********************************************************/
+          var useRouteParameter = next.$$route.useRouteParamTitle; // true or name of route param
+
+          // Dynamic route param title
+          if ( angular.isDefined(useRouteParameter) ) {
+
+            // If boolean value
+            if ( typeof useRouteParameter === 'boolean' ) {
+              var arr = Object.keys(next.params);
+              var tailOfArray = arr.slice(-1).pop();
+              scope.vhTitle = next.params[tailOfArray];
+
+            } else {
+              scope.vhTitle = next.params[useRouteParameter];
+            }
+
+          }
+
+          // Static title
+          else if ( angular.isDefined(next.title) ) {
+            scope.vhTitle = next.title;
+          } else {
+            $log.debug('This route has NO title declared.');
+            scope.vhTitle = null;
+          }
+          
+        });
+      }
+    }
+  }])
+
+  /**
    * Angular directive to update the 
    * html title tag.
    */
@@ -34,21 +81,23 @@ angular.module('vhTitle', [])
 
       template: tmpl,
       replace: true,
-      scope: false, // Dont isolate the scope, the alternative is to broadcast the title on the rootScope.
+      scope: {
+        suffix: '@suffix',
+        prefix: '@prefix'
+      },
+      //scope: false, // Dont isolate the scope, the alternative is to broadcast the title on the rootScope.
       link: function postLink(scope, elem, attrs) {
 
         // Watch for route change and update route title.
-        $rootScope.$on('$routeChangeSuccess', function (ev, current, prev) {
+        $rootScope.$on('$routeChangeStart', function (ev, next, current) {
 
           /**
            * Affixes
            * Set default affix on element or custom affix on route.
            *
            ********************************************************/
-          var customSuffix        = current.$$route.customSuffix;
-          var customPrefix        = current.$$route.customPrefix;
-          var defaultSuffix       = attrs.suffix;
-          var defaultPrefix       = attrs.prefix;
+          var customSuffix        = next.$$route.customSuffix;
+          var customPrefix        = next.$$route.customPrefix;
 
           if ( angular.isDefined(customPrefix) ) {
             scope.vhPrefix = customPrefix + ' - ' || null;
@@ -58,12 +107,12 @@ angular.module('vhTitle', [])
             scope.vhSuffix = ' - ' + customSuffix || null;
           }
 
-          else if ( angular.isDefined(defaultPrefix) ) {
-            scope.vhPrefix = defaultPrefix + ' - ' || null;
+          else if ( angular.isDefined(scope.prefix) ) {
+            scope.vhPrefix = scope.prefix + ' - ' || null;
           }
 
-          else if ( angular.isDefined(defaultSuffix) ) {
-            scope.vhSuffix = ' - ' + defaultSuffix || null;
+          else if ( angular.isDefined(scope.suffix) ) {
+            scope.vhSuffix = ' - ' + scope.suffix || null;
           }
 
           else {
@@ -75,26 +124,26 @@ angular.module('vhTitle', [])
            * Set titles or declare to use dynamic names on your route.
            *
            **********************************************************/
-          var useRouteParameter = current.$$route.useRouteParamTitle; // true or name of route param
+          var useRouteParameter = next.$$route.useRouteParamTitle; // true or name of route param
 
           // Dynamic route param title
           if ( angular.isDefined(useRouteParameter) ) {
 
             // If boolean value
             if ( typeof useRouteParameter === 'boolean' ) {
-              var arr = Object.keys(current.params);
+              var arr = Object.keys(next.params);
               var tailOfArray = arr.slice(-1).pop();
-              scope.vhTitle = current.params[tailOfArray];
+              scope.vhTitle = next.params[tailOfArray];
 
             } else {
-              scope.vhTitle = current.params[useRouteParameter];
+              scope.vhTitle = next.params[useRouteParameter];
             }
 
           }
 
           // Static title
-          else if ( angular.isDefined(current.title) ) {
-            scope.vhTitle = current.title;
+          else if ( angular.isDefined(next.title) ) {
+            scope.vhTitle = next.title;
           } else {
             $log.debug('This route has NO title declared.');
             scope.vhTitle = null;

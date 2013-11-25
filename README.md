@@ -3,10 +3,10 @@ Angular directive for HTML title tag.
 
 
 ## Installation
-This project depends on having routes. Hence you have to use angular-route.
+Angular route is a dependency.
 
 ### Bower
-Coming soon.
+Manually.
 
 ### Manual
 
@@ -68,20 +68,13 @@ when('/:name', {
 })
 ```
 
+If you specify boolean value it will pick the final/last parameter.
 
-If you exclude routeParamTitle variable it will pick the last route parameter.
-
-### Global scope variables
-Add/bind vhTitle to HTML tag to show the current title in your template.
+### Add title tag
+To add title tag use:
 
 ```html
-<h1 ng-bind="vhTitle"></h1>
-```
-
-Or...
-
-```
-<h1>{{vhTitle}}</h1>
+<h1 vh-heading></h1>
 ```
 
 ## License
