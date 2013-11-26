@@ -43,21 +43,20 @@ You can add affixes to your title.
 * Default suffix:
 
 ```html
-<title vh-page-title *suffix="This shows on all your pages after your main title"*></title>
+<title vh-page-title suffix="This shows on all your pages after your main title"></title> // Or prefix for prefixes
 ```
 
 Output for above with the previous route title would be:
-*AngularJS - This shows on all your pages after your main title*
+**AngularJS - This shows on all your pages after your main title**
 * Custom suffix:
 
 ```html
 .when('/', {
   title: 'AngularJS',
-  customSuffix: 'This text only visible on this route'
+  customSuffix: 'This text only visible on this route' // Or customPrefix for prefixes
 })
 ```
 
-To use prefixes instead, swap the text where appropriate.
 
 ### Dynamic titles
 Titles based on route variables.
@@ -70,8 +69,8 @@ when('/:name', {
 
 If you specify boolean value it will pick the final/last parameter.
 
-### Add title tag
-To add title tag use:
+### Heading tag
+To add heading tag use:
 
 ```html
 <h1 vh-heading></h1>
