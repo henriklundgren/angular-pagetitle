@@ -8,6 +8,11 @@
 
 angular.module('vhTitle', [])
 
+  /**
+   * Capitalize title filter
+   * SEO friendly titles are capitalized,
+   * unless not needed.
+   */
   .filter('vhCapitalizeTitle', function () {
     return function (input) {
       /**
@@ -25,13 +30,14 @@ angular.module('vhTitle', [])
   /**
    * Headlines
    */
-  .directive('vhHeading', ['$rootScope', '$log', function($rootScope, $log) {
+  .directive('vhHeading', [function() {
     return {
-      template: '{{vhTitle}}',
+      template: '{{vhHeading}}',
       replace: false,
-      scope: {},
-      link: function postLink(scope, element, attrs) {
-        
+      scope: {
+        defaultHeading: '@vhHeading'
+      },
+      controller: ['$scope', '$element', '$rootScope', '$log', function ($scope, $element, $rootScope, $log) {
         // Get title
         $rootScope.$on('$routeChangeStart', function (ev, next, current) {
           /**
@@ -48,23 +54,27 @@ angular.module('vhTitle', [])
             if ( typeof useRouteParameter === 'boolean' ) {
               var arr = Object.keys(next.params);
               var tailOfArray = arr.slice(-1).pop();
-              scope.vhTitle = next.params[tailOfArray];
+              $scope.vhHeading = next.params[tailOfArray];
 
             } else {
-              scope.vhTitle = next.params[useRouteParameter];
+              $scope.vhHeading = next.params[useRouteParameter];
             }
 
           }
 
           // Static title
           else if ( angular.isDefined(next.title) ) {
-            scope.vhTitle = next.title;
+            $scope.vhHeading = next.title;
+          } else if ( angular.isDefined($scope.defaultHeading) ) {
+            $scope.vhHeading = $scope.defaultHeading;
           } else {
-            $log.debug('This route has NO title declared.');
-            scope.vhTitle = null;
+            $log.debug('This route has NO title or heading declared.');
+            $scope.vhHeading = null;
           }
           
         });
+      }],
+      link: function postLink(scope, element, attrs, ctrl) {
       }
     }
   }])
@@ -73,7 +83,7 @@ angular.module('vhTitle', [])
    * Angular directive to update the 
    * html title tag.
    */
-  .directive('vhPageTitle', ['$rootScope', '$log', function($rootScope, $log) {
+  .directive('vhPageTitle', [function() {
 
     var tmpl = '<title data-ng-bind-template="{{vhPrefix}} {{vhTitle | vhCapitalizeTitle}} {{vhSuffix}}"></title>';
 
@@ -83,10 +93,10 @@ angular.module('vhTitle', [])
       replace: true,
       scope: {
         suffix: '@suffix',
-        prefix: '@prefix'
+        prefix: '@prefix',
+        defaultTitle: '@vhPageTitle'
       },
-      //scope: false, // Dont isolate the scope, the alternative is to broadcast the title on the rootScope.
-      link: function postLink(scope, elem, attrs) {
+      controller: ['$scope', '$element', '$rootScope', '$log', function ($scope, $element, $rootScope, $log) {
 
         // Watch for route change and update route title.
         $rootScope.$on('$routeChangeStart', function (ev, next, current) {
@@ -100,19 +110,19 @@ angular.module('vhTitle', [])
           var customPrefix        = next.$$route.customPrefix;
 
           if ( angular.isDefined(customPrefix) ) {
-            scope.vhPrefix = customPrefix + ' - ' || null;
+            $scope.vhPrefix = customPrefix + ' - ' || null;
           } 
           
           else if ( angular.isDefined(customSuffix) ) {
-            scope.vhSuffix = ' - ' + customSuffix || null;
+            $scope.vhSuffix = ' - ' + customSuffix || null;
           }
 
-          else if ( angular.isDefined(scope.prefix) ) {
-            scope.vhPrefix = scope.prefix + ' - ' || null;
+          else if ( angular.isDefined($scope.prefix) ) {
+            $scope.vhPrefix = $scope.prefix + ' - ' || null;
           }
 
-          else if ( angular.isDefined(scope.suffix) ) {
-            scope.vhSuffix = ' - ' + scope.suffix || null;
+          else if ( angular.isDefined($scope.suffix) ) {
+            $scope.vhSuffix = ' - ' + $scope.suffix || null;
           }
 
           else {
@@ -133,22 +143,29 @@ angular.module('vhTitle', [])
             if ( typeof useRouteParameter === 'boolean' ) {
               var arr = Object.keys(next.params);
               var tailOfArray = arr.slice(-1).pop();
-              scope.vhTitle = next.params[tailOfArray];
+              $scope.vhTitle = next.params[tailOfArray];
 
             } else {
-              scope.vhTitle = next.params[useRouteParameter];
+              $scope.vhTitle = next.params[useRouteParameter];
             }
 
           }
 
           // Static title
           else if ( angular.isDefined(next.title) ) {
-            scope.vhTitle = next.title;
+            $scope.vhTitle = next.title;
+          } else if ( angular.isDefined($scope.defaultTitle) ) {
+            $scope.vhTitle = $scope.defaultTitle;
           } else {
             $log.debug('This route has NO title declared.');
-            scope.vhTitle = null;
+            $scope.vhTitle = null;
           }
         });
+
+      }],
+      //scope: false, // Dont isolate the scope, the alternative is to broadcast the title on the rootScope.
+      link: function postLink(scope, elem, attrs) {
+
       }
     }
 
