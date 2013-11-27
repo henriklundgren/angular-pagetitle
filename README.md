@@ -21,7 +21,7 @@ Manually.
 Add the directive to your title tag.
 
 ```html
-<title vh-page-title></title>
+<title vh-page-title="Optional default title"></title> // Default title only visible if route title is omitted
 ```
 
 Add module to your project.
@@ -73,7 +73,7 @@ If you specify boolean value it will pick the final/last parameter.
 To add heading tag use:
 
 ```html
-<h1 vh-heading></h1>
+<h1 vh-heading="Optional default heading"></h1>
 ```
 
 ## License
