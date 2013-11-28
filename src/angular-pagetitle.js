@@ -30,16 +30,19 @@ angular.module('vhTitle', [])
   /**
    * Headlines
    */
-  .directive('vhHeading', [function() {
-    return {
+  .directive('vhHeading', ['$rootScope', function($rootScope) {
+
+    var directiveDefinitionObject = {
       template: '{{vhHeading}}',
       replace: false,
-      scope: {
-        defaultHeading: '@vhHeading'
-      },
+      scope: { heading: '@vhHeading' },
       controller: ['$scope', '$element', '$rootScope', '$log', function ($scope, $element, $rootScope, $log) {
-        // Get title
-        $rootScope.$on('$routeChangeStart', function (ev, next, current) {
+ 
+        // Watch route change
+        $rootScope.$on('$routeChangeStart', update);
+
+        // Update title
+        function update(ev, next, current) {
           /**
            * Title
            * Set titles or declare to use dynamic names on your route.
@@ -65,18 +68,22 @@ angular.module('vhTitle', [])
           // Static title
           else if ( angular.isDefined(next.title) ) {
             $scope.vhHeading = next.title;
-          } else if ( angular.isDefined($scope.defaultHeading) ) {
-            $scope.vhHeading = $scope.defaultHeading;
+            return 'henrik';
+          } else if ( angular.isDefined($scope.heading) ) {
+            $scope.vhHeading = $scope.heading;
           } else {
             $log.debug('This route has NO title or heading declared.');
             $scope.vhHeading = null;
           }
           
-        });
+        };
+
       }],
-      link: function postLink(scope, element, attrs, ctrl) {
-      }
-    }
+      //link: function (scope, element, attrs, ctrl) {};
+    };
+
+    return directiveDefinitionObject;
+
   }])
 
   /**
@@ -94,12 +101,15 @@ angular.module('vhTitle', [])
       scope: {
         suffix: '@suffix',
         prefix: '@prefix',
-        defaultTitle: '@vhPageTitle'
+        title: '@vhPageTitle'
       },
       controller: ['$scope', '$element', '$rootScope', '$log', function ($scope, $element, $rootScope, $log) {
 
-        // Watch for route change and update route title.
-        $rootScope.$on('$routeChangeStart', function (ev, next, current) {
+        // Watch route change.
+        $rootScope.$on('$routeChangeStart', update);
+
+        // Update title
+        function update(ev, next, current) {
 
           /**
            * Affixes
@@ -112,7 +122,7 @@ angular.module('vhTitle', [])
           if ( angular.isDefined(customPrefix) ) {
             $scope.vhPrefix = customPrefix + ' - ' || null;
           } 
-          
+
           else if ( angular.isDefined(customSuffix) ) {
             $scope.vhSuffix = ' - ' + customSuffix || null;
           }
@@ -155,18 +165,17 @@ angular.module('vhTitle', [])
           else if ( angular.isDefined(next.title) ) {
             $scope.vhTitle = next.title;
           } else if ( angular.isDefined($scope.defaultTitle) ) {
-            $scope.vhTitle = $scope.defaultTitle;
+            $scope.vhTitle = $scope.title;
           } else {
             $log.debug('This route has NO title declared.');
             $scope.vhTitle = null;
           }
-        });
+
+        };
 
       }],
       //scope: false, // Dont isolate the scope, the alternative is to broadcast the title on the rootScope.
-      link: function postLink(scope, elem, attrs) {
-
-      }
+      //link: function (scope, elem, attrs) {}
     }
 
     return directiveDefinitionObject;
