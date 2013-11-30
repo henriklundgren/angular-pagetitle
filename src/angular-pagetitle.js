@@ -31,6 +31,14 @@ angular.module('vhTitle', [])
    * Headlines
    */
   .directive('vhHeading', ['$rootScope', function($rootScope) {
+    /**
+     * @private
+     * @param [] Array to check
+     * @returns 'str' Returns the tail value of the array
+     */
+    function arrayTail(arr) {
+      return Object.keys(arr).slice(-1).pop();
+    }
 
     var directiveDefinitionObject = {
       template: '{{vhHeading}}',
@@ -43,39 +51,15 @@ angular.module('vhTitle', [])
 
         // Update title
         function update(ev, next, current) {
-          /**
-           * Title
-           * Set titles or declare to use dynamic names on your route.
-           *
-           **********************************************************/
-          var useRouteParameter = next.$$route.useRouteParamTitle; // true or name of route param
 
-          // Dynamic route param title
-          if ( angular.isDefined(useRouteParameter) ) {
-
-            // If boolean value
-            if ( typeof useRouteParameter === 'boolean' ) {
-              var arr = Object.keys(next.params);
-              var tailOfArray = arr.slice(-1).pop();
-              $scope.vhHeading = next.params[tailOfArray];
-
-            } else {
-              $scope.vhHeading = next.params[useRouteParameter];
-            }
-
+          // Dynamic route title
+          if ( angular.isDefined(next.$$route.useRouteParamTitle) ) {
+            $scope.vhHeading = next.params[arrayTail(next.params)] || next.params[next.$$route.useRouteParamTitle] || null;
           }
-
-          // Static title
-          else if ( angular.isDefined(next.title) ) {
-            $scope.vhHeading = next.title;
-            return 'henrik';
-          } else if ( angular.isDefined($scope.heading) ) {
-            $scope.vhHeading = $scope.heading;
-          } else {
-            $log.debug('This route has NO title or heading declared.');
-            $scope.vhHeading = null;
-          }
-          
+          // Static route title
+          else {
+            $scope.vhHeading = next.title || $scope.heading || null;
+          } 
         };
 
       }],
@@ -91,6 +75,15 @@ angular.module('vhTitle', [])
    * html title tag.
    */
   .directive('vhPageTitle', [function() {
+
+    /**
+     * @private
+     * @param [] Array to check
+     * @returns 'str' Returns the tail value of the array
+     */
+    function arrayTail(arr) {
+      return Object.keys(arr).slice(-1).pop();
+    }
 
     var tmpl = '<title data-ng-bind-template="{{vhPrefix}} {{vhTitle | vhCapitalizeTitle}} {{vhSuffix}}"></title>';
 
@@ -115,38 +108,17 @@ angular.module('vhTitle', [])
           $scope.vhPrefix = next.$$route.customPrefix || $scope.prefix || null;
           $scope.vhSuffix = next.$$route.customSuffix || $scope.suffix || null;
 
-          // Pagetitle
-          var useRouteParameter = next.$$route.useRouteParamTitle; // true or name of route param
-
-          // Dynamic route param title
-          if ( angular.isDefined(useRouteParameter) ) {
-
-            // If boolean value
-            if ( typeof useRouteParameter === 'boolean' ) {
-              var arr = Object.keys(next.params);
-              var tailOfArray = arr.slice(-1).pop();
-              $scope.vhTitle = next.params[tailOfArray];
-
-            } else {
-              $scope.vhTitle = next.params[useRouteParameter];
-            }
-
+          // Dynamic route title
+          if ( angular.isDefined(next.$$route.useRouteParamTitle) ) {
+            $scope.vhTitle = next.params[arrayTail(next.params)] || next.params[next.$$route.useRouteParamTitle] || null;
           }
-
-          // Static title
-          else if ( angular.isDefined(next.title) ) {
-            $scope.vhTitle = next.title;
-          } else if ( angular.isDefined($scope.defaultTitle) ) {
-            $scope.vhTitle = $scope.title;
-          } else {
-            $log.debug('This route has NO title declared.');
-            $scope.vhTitle = null;
+          // Static route title
+          else {
+            $scope.vhTitle = next.title || $scope.title || null;
           }
 
         };
-
       }],
-      //scope: false, // Dont isolate the scope, the alternative is to broadcast the title on the rootScope.
       //link: function (scope, elem, attrs) {}
     }
 
