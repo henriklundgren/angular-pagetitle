@@ -111,39 +111,11 @@ angular.module('vhTitle', [])
         // Update title
         function update(ev, next, current) {
 
-          /**
-           * Affixes
-           * Set default affix on element or custom affix on route.
-           *
-           ********************************************************/
-          var customSuffix        = next.$$route.customSuffix;
-          var customPrefix        = next.$$route.customPrefix;
+          // Affixes
+          $scope.vhPrefix = next.$$route.customPrefix || $scope.prefix || null;
+          $scope.vhSuffix = next.$$route.customSuffix || $scope.suffix || null;
 
-          if ( angular.isDefined(customPrefix) ) {
-            $scope.vhPrefix = customPrefix + ' - ' || null;
-          } 
-
-          else if ( angular.isDefined(customSuffix) ) {
-            $scope.vhSuffix = ' - ' + customSuffix || null;
-          }
-
-          else if ( angular.isDefined($scope.prefix) ) {
-            $scope.vhPrefix = $scope.prefix + ' - ' || null;
-          }
-
-          else if ( angular.isDefined($scope.suffix) ) {
-            $scope.vhSuffix = ' - ' + $scope.suffix || null;
-          }
-
-          else {
-            return;
-          }
-
-          /**
-           * Title
-           * Set titles or declare to use dynamic names on your route.
-           *
-           **********************************************************/
+          // Pagetitle
           var useRouteParameter = next.$$route.useRouteParamTitle; // true or name of route param
 
           // Dynamic route param title
